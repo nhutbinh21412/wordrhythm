@@ -1,0 +1,46 @@
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Local SQLite Database (auto-generated on app startup)
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE / Editor configurations
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Pygame & Pygbag build artifacts
+build/
+dist/
+web/
+.pytest_cache/
+*.egg-info/
+.eggs/
+
+# Logs & temp files
+*.log
+logs/
+temp/
+tmp/

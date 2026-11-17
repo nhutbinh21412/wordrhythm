@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordRhythm - 2D Rhythm Boss Battle & Spaced Repetition</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/game.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="brand-logo" onclick="window.location.reload()">
+            <div class="brand-icon-wrapper">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+            </div>
+            <div class="brand-text">WORD<span class="highlight">RHYTHM</span></div>
+        </div>
+
+        <nav class="nav-links">
+            <button class="nav-tab-btn active" id="nav-tab-campaign" data-target="view-campaign">⚔️ Đấu Boss</button>
+            <button class="nav-tab-btn" id="nav-tab-vocab" data-target="view-vocab">📖 Kho Từ Vựng</button>
+            <button class="nav-tab-btn" id="nav-tab-srs" data-target="view-srs">🧠 Spaced Repetition</button>
+            <button class="nav-tab-btn" id="nav-tab-editor" data-target="view-editor">🛠️ Level Editor</button>
+            <button class="nav-tab-btn" id="nav-tab-leaderboard" data-target="view-leaderboard">🏆 Xếp Hạng</button>
+        </nav>
+
+        <div class="nav-user" id="nav-user-area">
+            <!-- Rendered by auth.js -->
+        </div>
+    </header>
+
+    <!-- Quick Demo Bar -->
+    <div class="demo-accounts-bar">
+        <span>⚡ Đăng nhập thử nghiệm:</span>
+        <button id="btn-demo-student" class="demo-btn">🎓 Học Viên (student)</button>
+        <button id="btn-demo-teacher" class="demo-btn">👨‍🏫 Giáo Viên (teacher)</button>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+
+        <!-- VIEW 1: CAMPAIGN / BATTLE VIEW -->
+        <section id="view-campaign" class="view-section active">
+            <!-- Screen A: Level Selection -->
+            <div id="level-selection-screen">
+                <div class="campaign-banner">
+                    <h1>Chiến Boss Luyện Từ Vựng Theo Nhịp Điệu (BPM)</h1>
+                    <p>Mỗi thử thách diễn ra dồn dập theo nhịp BPM. Bạn có <strong>3 HP</strong>, Boss có thanh máu. Hãy hoàn thành chuẩn xác 4 kiểu thử thách để hạ gục Boss và củng cố trí nhớ!</p>
+                </div>
+
+                <div class="levels-grid" id="levels-grid">
+                    <!-- Loaded dynamically via gameManager.loadCampaignLevels() -->
+                </div>
+            </div>
+
+            <!-- Screen B: Battle Arena -->
+            <div id="battle-arena-screen" class="hidden">
+                <div class="battle-arena-container">
+                    <!-- Top HUD Bar -->
+                    <div class="battle-top-bar">
+                        <div class="hud-info">
+                            <button id="btn-leave-battle" class="btn-secondary" style="padding: 4px 10px; font-size: 12px;">← Rời trận</button>
+                            <span id="hud-level-title" class="hud-level-name">Level Title</span>
+                            <span id="hud-bpm-display" class="hud-bpm-pill">120 BPM</span>
+                        </div>
+
+                        <div class="hud-stats-group">
+                            <div class="hud-stat-item">
+                                <span class="label">COMBO</span>
+                                <span id="hud-combo-counter" class="val combo-glow">0x</span>
+                            </div>
+                            <div class="hud-stat-item">
+                                <span class="label">SCORE</span>
+                                <span id="hud-score-counter" class="val">0</span>
+                            </div>
+                            <div class="hud-stat-item">
+                                <span class="label">ACCURACY</span>
+                                <span id="hud-accuracy-counter" class="val">100%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2D Canvas Battle Scene (Boss, Hearts, Beat Wave, Particles) -->
+                    <div class="canvas-wrapper">
+                        <canvas id="game-canvas"></canvas>
+                    </div>
+
+                    <!-- Dynamic Challenge Area (Rendered by ChallengeController) -->
+                    <div id="challenge-area">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: NEW! CAMBRIDGE VOCABULARY EXPLORER -->
+        <section id="view-vocab" class="view-section">
+            <div class="campaign-banner">
+                <h1>Kho Từ Vựng Chuẩn Cambridge (A1 - C1)</h1>
+                <p>Khám phá kho từ vựng phong phú được chọn lọc theo chuẩn khảo thí quốc tế Cambridge. Tra cứu phiên âm quốc tế IPA, nghĩa tiếng Việt, định nghĩa Anh - Anh, ví dụ ngữ cảnh và nghe phát âm chuẩn bản xứ.</p>
+            </div>
+
+            <div class="vocab-filter-bar">
+                <input type="text" id="vocab-search-input" class="vocab-search-input" placeholder="🔍 Tìm kiếm từ vựng, nghĩa tiếng Việt hoặc chủ đề..." />
+                
+                <div class="cefr-filter-pills">
+                    <button class="pill-filter active" data-cefr="ALL">Tất cả</button>
+                    <button class="pill-filter" data-cefr="A1">A1</button>
+                    <button class="pill-filter" data-cefr="A2">A2</button>
+                    <button class="pill-filter" data-cefr="B1">B1</button>
+                    <button class="pill-filter" data-cefr="B2">B2</button>
+                    <button class="pill-filter" data-cefr="C1">C1</button>
+                </div>
+            </div>
+
+            <div class="vocab-explorer-grid" id="vocab-explorer-grid">
+                <!-- Rendered dynamically by vocab_explorer.js -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: SPACED REPETITION & WEAK WORDS VIEW -->
+        <section id="view-srs" class="view-section">
+            <!-- Stats Row -->
+            <div class="srs-stats-grid">
+                <div class="srs-stat-card">
+                    <div class="icon">📚</div>
+                    <div class="info">
+                        <div class="value" id="stat-total-cards">0</div>
+                        <div class="label">Thẻ Đã Học</div>
+                    </div>
+                </div>
+                <div class="srs-stat-card">
+                    <div class="icon">⏰</div>
+                    <div class="info">
+                        <div class="value" id="stat-due-today">0</div>
+                        <div class="label">Cần Ôn Hôm Nay</div>
+                    </div>
+                </div>
+                <div class="srs-stat-card">
+                    <div class="icon">⭐</div>
+                    <div class="info">
+                        <div class="value" id="stat-mastered">0</div>
+                        <div class="label">Đã Thành Thạo</div>
+                    </div>
+                </div>
+                <div class="srs-stat-card">
+                    <div class="icon">⚠️</div>
+                    <div class="info">
+                        <div class="value" id="stat-weak">0</div>
+                        <div class="label">Từ Yếu Cần Ôn</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mistake Practice Mode Callout -->
+            <div class="mistake-mode-banner">
+                <div class="mistake-mode-info">
+                    <h2>Chế Độ Luyện Sai (Mistake Slayer: Shadow Phantom)</h2>
+                    <p>Hệ thống tự động tập hợp các từ vựng bạn hay làm sai nhất để tạo một trận đấu Boss riêng biệt. Chiến thắng Boss để xóa bỏ điểm yếu và củng cố hệ số ghi nhớ SM-2!</p>
+                </div>
+                <button id="btn-launch-mistake-boss" class="btn-mistake-boss">⚔️ Khiêu Chiến Boss Luyện Sai</button>
+            </div>
+
+            <!-- Flashcard Review Deck for Due Words -->
+            <h2 class="section-title">🃏 Ôn Tập Theo Chu Kỳ SuperMemo SM-2</h2>
+            <div class="srs-card-container" id="srs-card-container">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Weak Words Notebook -->
+            <h2 class="section-title">📖 Sổ Tay Từ Vựng Hay Sai (Thống Kê Từ Yếu)</h2>
+            <div id="weak-words-list">
+                <!-- Rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- VIEW 4: TEACHER LEVEL EDITOR -->
+        <section id="view-editor" class="view-section">
+            <div id="editor-role-guard" class="hidden">
+                <div class="empty-state" style="padding: 36px; text-align: center; background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-lg);">
+                    <h2 style="font-size: 18px; color: var(--text-primary);">🔒 Quyền Dành Cho Giáo Viên (Teacher / Admin)</h2>
+                    <p style="margin: 8px 0 16px 0; color: var(--text-secondary); font-size: 13.5px;">Level Editor chỉ mở cho tài khoản giáo viên để thiết kế giáo án và tạo boss màn chơi riêng cho học sinh.</p>
+                    <button class="btn-primary" onclick="window.authManager.performLogin('teacher', 'teacher123')">Chuyển Sang Tài Khoản Giáo Viên (teacher)</button>
+                </div>
+            </div>
+
+            <div id="editor-main-content">
+                <div class="editor-layout">
+                    <!-- Left Column: Create Level Form -->
+                    <div class="editor-card">
+                        <h3>🛠️ Tạo Màn Chơi Boss Mới</h3>
+                        <form id="form-create-level">
+                            <div class="form-group">
+                                <label>Tên Màn Chơi:</label>
+                                <input type="text" id="editor-level-title" class="form-input" placeholder="Ví dụ: Level 8: Space Exploration" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Chủ Đề (Theme Cambridge):</label>
+                                <input type="text" id="editor-level-theme" class="form-input" placeholder="Ví dụ: Astronomy & Physics" required />
+                            </div>
+
+                            <div style="display: flex; gap: 12px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Tên Boss:</label>
+                                    <input type="text" id="editor-boss-name" class="form-input" placeholder="Ví dụ: Cosmos Titan" required />
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Danh Hiệu Boss:</label>
+                                    <input type="text" id="editor-boss-title" class="form-input" placeholder="Ví dụ: Hộ Thần Vũ Trụ" required />
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 12px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Hình Tượng Boss (Avatar):</label>
+                                    <select id="editor-boss-avatar" class="form-select">
+                                        <option value="boss_cyber">🤖 Cyber Core AI</option>
+                                        <option value="boss_chef">👨‍🍳 Chef Glutton</option>
+                                        <option value="boss_chimera">🐉 Forest Chimera</option>
+                                        <option value="boss_monopoly">🎩 Lord Monopoly</option>
+                                        <option value="boss_examiner">👑 Grand Examiner</option>
+                                        <option value="boss_shadow">👤 Shadow Phantom</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Độ Khó:</label>
+                                    <select id="editor-difficulty" class="form-select">
+                                        <option value="Easy">Dễ (Easy)</option>
+                                        <option value="Medium" selected>Trung Bình (Medium)</option>
+                                        <option value="Hard">Khó (Hard)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nhịp Điệu Trận Đấu (BPM):</label>
+                                <div class="bpm-slider-row">
+                                    <input type="range" id="editor-bpm-slider" min="80" max="160" value="120" step="5" />
+                                    <span id="editor-bpm-value" class="bpm-value-tag">120 BPM</span>
+                                    <button type="button" id="btn-bpm-preview" class="btn-sm-preview">🎵 Nghe Thử Nhịp</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Máu Boss (HP):</label>
+                                <input type="number" id="editor-boss-hp" class="form-input" value="100" min="50" max="300" required />
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 18px 0;">
+
+                            <h4 style="color: var(--accent-emerald); font-size: 15px; margin-bottom: 12px;">🎯 Thiết Kế Thử Thách Của Boss</h4>
+                            <div class="form-group">
+                                <label>Kiểu Thử Thách:</label>
+                                <select id="editor-challenge-type" class="form-select">
+                                    <option value="sentence_assemble">1. Ghép câu theo nhịp</option>
+                                    <option value="fill_blank">2. Điền câu khuyết</option>
+                                    <option value="vocab_pronounce">3. Từ vựng & Phát âm Cambridge</option>
+                                    <option value="paragraph_order">4. Sắp xếp đoạn văn</option>
+                                </select>
+                            </div>
+
+                            <div id="challenge-dynamic-fields">
+                                <!-- Rendered dynamically based on selected type -->
+                            </div>
+
+                            <button type="submit" class="btn-primary full-width mt-16">💾 Lưu & Xuất Bản Màn Chơi</button>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: My Custom Levels List -->
+                    <div class="editor-card">
+                        <h3>📋 Màn Chơi Do Bạn Thiết Kế</h3>
+                        <div id="editor-levels-list">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 5: LEADERBOARD VIEW -->
+        <section id="view-leaderboard" class="view-section">
+            <div class="campaign-banner">
+                <h1>Bảng Xếp Hạng Anh Hùng Nhịp Điệu (Global Leaderboard)</h1>
+                <p>Vinh danh những chiến binh có điểm số cao nhất, chuỗi Combo hoàn hảo nhất và độ chính xác nhịp điệu đỉnh cao!</p>
+            </div>
+
+            <div class="leaderboard-table-container">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Hạng</th>
+                            <th>Người Chơi</th>
+                            <th>Điểm Số</th>
+                            <th>Max Combo</th>
+                            <th>Độ Chính Xác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-list">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Auth (Login & Register) -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="auth-modal-title">Đăng Nhập Tài Khoản</h3>
+                <button id="btn-close-modal" class="btn-close">&times;</button>
+            </div>
+            <form id="auth-form" data-mode="login">
+                <div class="form-group">
+                    <label>Tên đăng nhập:</label>
+                    <input type="text" id="auth-username" class="form-input" required />
+                </div>
+                <div class="form-group hidden" id="auth-email-group">
+                    <label>Email:</label>
+                    <input type="email" id="auth-email" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu:</label>
+                    <input type="password" id="auth-password" class="form-input" required />
+                </div>
+                <div class="form-group hidden" id="auth-role-group">
+                    <label>Vai trò:</label>
+                    <select id="auth-role" class="form-select">
+                        <option value="student">🎓 Học Viên (Student)</option>
+                        <option value="teacher">👨‍🏫 Giáo Viên (Teacher)</option>
+                    </select>
+                </div>
+                <button type="submit" id="btn-auth-submit" class="btn-primary full-width mt-16">Xác Nhận</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Battle Result (Victory / Defeat) -->
+    <div id="battle-result-modal" class="modal-overlay hidden">
+        <div class="modal-card animate-pop" style="max-width: 500px;">
+            <h2 id="result-modal-title" class="result-title victory">🏆 HẠ GỤC BOSS THÀNH CÔNG!</h2>
+            <p id="result-modal-sub" style="text-align: center; color: var(--text-secondary); font-size: 13.5px; margin-bottom: 14px;">Bạn đã đánh bại Boss theo đúng nhịp điệu!</p>
+
+            <div class="result-stats-row">
+                <div class="stat-box">
+                    <div class="lbl">TỔNG ĐIỂM</div>
+                    <div class="val" id="res-score">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="lbl">MAX COMBO</div>
+                    <div class="val" id="res-combo">0x</div>
+                </div>
+                <div class="stat-box">
+                    <div class="lbl">CHÍNH XÁC</div>
+                    <div class="val" id="res-acc">100%</div>
+                </div>
+            </div>
+
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 8px;">
+                Cập nhật trí nhớ Spaced Repetition (SM-2) cho các từ trong trận:
+            </div>
+            <div class="words-reviewed-section" id="res-words-summary">
+                <!-- Dynamically rendered -->
+            </div>
+
+            <div class="action-buttons-row" style="margin-top: 16px;">
+                <button id="btn-back-levels" class="btn-secondary">Danh Sách Màn</button>
+                <button id="btn-restart-battle" class="btn-primary">⚔️ Chiến Lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/audio.js"></script>
+    <script src="/static/js/rhythm_engine.js"></script>
+    <script src="/static/js/game_canvas.js"></script>
+    <script src="/static/js/challenge_modes.js"></script>
+    <script src="/static/js/srs_dashboard.js"></script>
+    <script src="/static/js/vocab_explorer.js"></script>
+    <script src="/static/js/level_editor.js"></script>
+    <script src="/static/js/leaderboard.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/main.js"></script>
+
+</body>
+</html>
