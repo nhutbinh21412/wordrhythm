@@ -54,11 +54,7 @@ class GameCanvas {
     }
 
     setPlayerHp(hp) {
-        if (hp < this.playerHp) {
-            const lostIdx = hp;
-            this.spawnHeartShatter(lostIdx);
-        }
-        this.playerHp = Math.max(0, Math.min(3, hp));
+        // Player HP removed - unlimited continuous learning
     }
 
     damageBoss(amount) {
@@ -72,7 +68,7 @@ class GameCanvas {
     bossAttack() {
         this.bossAttackAnim = 16;
         this.bossShake = 18;
-        this.spawnFloatingText("-1 HP", 120, 45, "#f43f5e");
+        this.spawnFloatingText("MISS!", this.canvas.width / 2, 230, "#f43f5e");
         this.spawnHitBurst(this.canvas.width / 2, 210, "#f43f5e");
     }
 
@@ -469,25 +465,7 @@ class GameCanvas {
     }
 
     renderPlayerHUD() {
-        const { ctx } = this;
-        ctx.save();
-
-        ctx.font = "600 11px 'Plus Jakarta Sans', sans-serif";
-        ctx.fillStyle = "#94a3b8";
-        ctx.fillText("PLAYER HP", 24, 30);
-
-        for (let i = 0; i < 3; i++) {
-            const hx = 105 + i * 28;
-            const hy = 22;
-            const isAlive = i < this.playerHp;
-
-            ctx.save();
-            ctx.fillStyle = isAlive ? "#f43f5e" : "rgba(255, 255, 255, 0.12)";
-            this.drawHeart(ctx, hx, hy, 12);
-            ctx.restore();
-        }
-
-        ctx.restore();
+        // Player HP hearts removed - clean arena view
     }
 
     drawHeart(ctx, x, y, size) {

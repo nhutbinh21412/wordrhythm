@@ -128,16 +128,11 @@ class GameState:
             self.setup_challenge()
 
     def damage_player(self):
-        self.player_hp = max(0, self.player_hp - 1)
         self.combo = 0
         self.boss_shake = 20
-        self.floating_texts.append({"text": "BOSS HIT! -1 HP", "x": 400, "y": 200, "color": COLOR_RED, "life": 45})
-
-        if self.player_hp <= 0:
-            self.game_over = True
-        else:
-            self.current_idx += 1
-            self.setup_challenge()
+        self.floating_texts.append({"text": "MISS!", "x": 400, "y": 200, "color": COLOR_RED, "life": 45})
+        self.current_idx += 1
+        self.setup_challenge()
 
 async def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -273,13 +268,6 @@ async def main():
         pygame.draw.rect(screen, COLOR_CYAN, (250, 40, int(hp_bar_w * hp_pct), 16))
         hp_txt = FONT_SMALL.render(f"BOSS HP: {state.boss_hp} / {state.boss_max_hp}", True, COLOR_WHITE)
         screen.blit(hp_txt, (340, 20))
-
-        # Player HP Hearts
-        p_txt = FONT_MAIN.render("PLAYER HP:", True, COLOR_RED)
-        screen.blit(p_txt, (30, 30))
-        for i in range(3):
-            color = COLOR_RED if i < state.player_hp else COLOR_GRAY
-            pygame.draw.circle(screen, color, (170 + i * 32, 42), 10)
 
         # Stats
         stats_txt = FONT_SMALL.render(f"SCORE: {state.score}  |  COMBO: {state.combo}x  |  BPM: {state.bpm}", True, COLOR_YELLOW)
