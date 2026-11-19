@@ -3,11 +3,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from .config import settings
 
+# Handle Render / Supabase / Heroku postgres:// -> postgresql:// prefix
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 # Handle SQLite concurrency and postgres compatibility
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args
 )
 
