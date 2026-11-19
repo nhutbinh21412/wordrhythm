@@ -110,7 +110,8 @@ class GameManager {
                         <span class="bpm-badge">⚡ ${lvl.bpm} BPM</span>
                     </div>
                     <div class="level-boss-portrait avatar-${lvl.boss_avatar}">
-                        <div class="boss-emoji">${this.getAvatarEmoji(lvl.boss_avatar)}</div>
+                        <img src="${this.getAvatarImage(lvl.boss_avatar)}" alt="${lvl.boss_name}" class="boss-img-icon" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';">
+                        <div class="boss-emoji" style="display: none;">${this.getAvatarEmoji(lvl.boss_avatar)}</div>
                     </div>
                     <div class="level-info">
                         <h3 class="level-title">${lvl.title}</h3>
@@ -135,12 +136,26 @@ class GameManager {
         }
     }
 
+    getAvatarImage(avatar) {
+        const map = {
+            "boss_chef": "/static/assets/bosses/boss_chef.png",
+            "boss_cyber": "/static/assets/bosses/boss_cyber.png",
+            "boss_chimera": "/static/assets/bosses/boss_chimera.png",
+            "boss_monopoly": "/static/assets/bosses/boss_monopoly.png",
+            "boss_nomad": "/static/assets/bosses/boss_nomad.png",
+            "boss_examiner": "/static/assets/bosses/boss_examiner.png",
+            "boss_shadow": "/static/assets/bosses/boss_cyber.png"
+        };
+        return map[avatar] || "/static/assets/bosses/boss_cyber.png";
+    }
+
     getAvatarEmoji(avatar) {
         switch (avatar) {
             case "boss_chef": return "👨‍🍳";
             case "boss_cyber": return "🤖";
             case "boss_chimera": return "🐉";
             case "boss_monopoly": return "🎩";
+            case "boss_nomad": return "🧭";
             case "boss_examiner": return "👑";
             case "boss_shadow": return "👤";
             default: return "👾";

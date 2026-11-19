@@ -7,6 +7,7 @@ import math
 import time
 import random
 import sys
+import os
 import pygame
 
 # Initialize Pygame
@@ -143,6 +144,19 @@ async def main():
     pygame.display.set_caption("WordRhythm - 2D Pygame & Pygbag WebAssembly Edition")
     clock = pygame.time.Clock()
 
+    # Load Boss PNG icons from assets
+    boss_images = {}
+    assets_dir = os.path.join(os.path.dirname(__file__), "assets", "bosses")
+    if os.path.exists(assets_dir):
+        for name in ["boss_chef", "boss_cyber", "boss_chimera", "boss_monopoly", "boss_nomad", "boss_examiner"]:
+            p = os.path.join(assets_dir, f"{name}.png")
+            if os.path.exists(p):
+                try:
+                    raw = pygame.image.load(p).convert_alpha()
+                    boss_images[name] = pygame.transform.smoothscale(raw, (90, 90))
+                except Exception as e:
+                    print(f"Could not load {p}: {e}")
+
     state = GameState()
     running = True
 
@@ -229,11 +243,28 @@ async def main():
         boss_y = 160
         if state.boss_shake > 0: state.boss_shake -= 1
 
-        boss_color = COLOR_RED if state.boss_hurt > 0 else COLOR_CYAN
-        if state.boss_hurt > 0: state.boss_hurt -= 1
-        pygame.draw.circle(screen, boss_color, (boss_x, boss_y), 45)
-        pygame.draw.circle(screen, COLOR_WHITE, (boss_x - 16, boss_y - 6), 6)
-        pygame.draw.circle(screen, COLOR_WHITE, (boss_x + 16, boss_y - 6), 6)
+        # Determine Boss Avatar for current challenge
+        b_key = "boss_chef"
+        if ch:
+            if ch.get("type") == "vocab_pronounce":
+                b_key = "boss_cyber"
+            elif ch.get("type") == "paragraph_order":
+                b_key = "boss_examiner"
+
+        b_img = boss_images.get(b_key)
+        if b_img:
+            screen.blit(b_img, (boss_x - 45, boss_y - 45))
+            if state.boss_hurt > 0:
+                state.boss_hurt -= 1
+                pygame.draw.circle(screen, COLOR_RED, (boss_x, boss_y), 47, 3)
+            else:
+                pygame.draw.circle(screen, COLOR_CYAN, (boss_x, boss_y), 47, 2)
+        else:
+            boss_color = COLOR_RED if state.boss_hurt > 0 else COLOR_CYAN
+            if state.boss_hurt > 0: state.boss_hurt -= 1
+            pygame.draw.circle(screen, boss_color, (boss_x, boss_y), 45)
+            pygame.draw.circle(screen, COLOR_WHITE, (boss_x - 16, boss_y - 6), 6)
+            pygame.draw.circle(screen, COLOR_WHITE, (boss_x + 16, boss_y - 6), 6)
 
         # Boss HP Bar
         hp_bar_w = 300

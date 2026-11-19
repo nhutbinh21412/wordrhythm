@@ -21,6 +21,15 @@ class GameCanvas {
         this.playerHp = 3;
         this.playerMaxHp = 3;
 
+        // Preload Boss High-Res Icons
+        this.bossImages = {};
+        const avatarList = ["boss_chef", "boss_cyber", "boss_chimera", "boss_monopoly", "boss_nomad", "boss_examiner", "boss_shadow"];
+        avatarList.forEach(key => {
+            const img = new Image();
+            img.src = `/static/assets/bosses/${key}.png`;
+            this.bossImages[key] = img;
+        });
+
         this.initResize();
         this.startLoop();
     }
@@ -244,18 +253,53 @@ class GameCanvas {
         ctx.ellipse(bx, cy + 80, 65, 14, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        if (this.bossAvatar === "boss_chef") {
-            this.drawChefBoss(ctx, bx, by);
-        } else if (this.bossAvatar === "boss_chimera") {
-            this.drawChimeraBoss(ctx, bx, by);
-        } else if (this.bossAvatar === "boss_monopoly") {
-            this.drawMonopolyBoss(ctx, bx, by);
-        } else if (this.bossAvatar === "boss_examiner") {
-            this.drawExaminerBoss(ctx, bx, by);
-        } else if (this.bossAvatar === "boss_shadow") {
-            this.drawShadowBoss(ctx, bx, by);
+        // Check if preloaded boss PNG is available
+        const bossImg = this.bossImages[this.bossAvatar];
+        if (bossImg && bossImg.complete && bossImg.naturalWidth > 0) {
+            const size = 114;
+            
+            // Glowing rhythm aura behind boss
+            const glowColor = this.bossHurtFlash > 0 ? "rgba(244, 63, 94, 0.45)" : (this.beatPulse > 0.4 ? "rgba(6, 182, 212, 0.4)" : "rgba(16, 185, 129, 0.2)");
+            ctx.fillStyle = glowColor;
+            ctx.beginPath();
+            ctx.arc(bx, by, 58 + this.beatPulse * 7, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Circular clipped Boss portrait
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(bx, by, 52, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(bossImg, bx - size / 2, by - size / 2, size, size);
+
+            // Red flash overlay when hurt
+            if (this.bossHurtFlash > 0) {
+                ctx.fillStyle = `rgba(244, 63, 94, ${Math.min(0.65, this.bossHurtFlash * 0.08)})`;
+                ctx.fillRect(bx - size / 2, by - size / 2, size, size);
+            }
+            ctx.restore();
+
+            // Outer decorative neon border ring
+            ctx.strokeStyle = this.bossHurtFlash > 0 ? "#f43f5e" : (this.beatPulse > 0.3 ? "#06b6d4" : "rgba(255, 255, 255, 0.25)");
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(bx, by, 52, 0, Math.PI * 2);
+            ctx.stroke();
         } else {
-            this.drawCyberCoreBoss(ctx, bx, by);
+            // Procedural vector fallback
+            if (this.bossAvatar === "boss_chef") {
+                this.drawChefBoss(ctx, bx, by);
+            } else if (this.bossAvatar === "boss_chimera") {
+                this.drawChimeraBoss(ctx, bx, by);
+            } else if (this.bossAvatar === "boss_monopoly") {
+                this.drawMonopolyBoss(ctx, bx, by);
+            } else if (this.bossAvatar === "boss_examiner") {
+                this.drawExaminerBoss(ctx, bx, by);
+            } else if (this.bossAvatar === "boss_shadow") {
+                this.drawShadowBoss(ctx, bx, by);
+            } else {
+                this.drawCyberCoreBoss(ctx, bx, by);
+            }
         }
 
         ctx.restore();

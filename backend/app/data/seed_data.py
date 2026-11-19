@@ -334,7 +334,7 @@ CAMBRIDGE_LEVELS_DATA = [
         "description": "Chu du khắp thế giới cùng Thuyền Trưởng Viễn Du! Bộ từ vựng Cambridge A2-B2 về du lịch, phong tục và di sản.",
         "boss_name": "Captain Nomad",
         "boss_title": "Thuyền Trưởng Viễn Du",
-        "boss_avatar": "boss_monopoly",
+        "boss_avatar": "boss_nomad",
         "bpm": 115,
         "boss_hp": 110,
         "difficulty": "Medium",
