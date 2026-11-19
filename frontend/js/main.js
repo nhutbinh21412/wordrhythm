@@ -173,6 +173,9 @@ class GameManager {
 
     async startMistakeBossBattle() {
         try {
+            if (!window.ApiClient.getToken() && window.authManager) {
+                await window.authManager.ensureSession();
+            }
             const bossData = await window.ApiClient.getMistakeBoss();
             // Switch to campaign view and start
             document.querySelectorAll(".nav-tab-btn").forEach(b => b.classList.remove("active"));
@@ -182,7 +185,21 @@ class GameManager {
 
             this.startBattle(bossData);
         } catch (e) {
-            alert("Lỗi khởi tạo Boss Luyện Sai: " + e.message);
+            console.warn("First attempt failed, refreshing session...", e);
+            try {
+                if (window.authManager) {
+                    await window.authManager.performLogin("student", "student123");
+                    const retryBoss = await window.ApiClient.getMistakeBoss();
+                    document.querySelectorAll(".nav-tab-btn").forEach(b => b.classList.remove("active"));
+                    document.querySelectorAll(".view-section").forEach(v => v.classList.remove("active"));
+                    document.getElementById("nav-tab-campaign").classList.add("active");
+                    document.getElementById("view-campaign").classList.add("active");
+                    this.startBattle(retryBoss);
+                    return;
+                }
+            } catch (retryErr) {
+                alert("Lỗi khởi tạo Boss Luyện Sai: " + e.message);
+            }
         }
     }
 

@@ -46,8 +46,12 @@ class ApiClient {
             });
 
             if (response.status === 401) {
-                // Token expired or invalid
-                console.warn("Unauthorized request, clearing session.");
+                // Token expired or invalid - clear invalid token from localStorage
+                console.warn("Unauthorized request (401), clearing stale token.");
+                this.removeToken();
+                if (window.authManager) {
+                    window.authManager.updateNavUser();
+                }
             }
 
             const data = await response.json();
