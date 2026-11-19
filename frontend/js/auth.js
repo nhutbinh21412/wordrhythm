@@ -3,6 +3,20 @@ class AuthManager {
     constructor() {
         this.currentUser = window.ApiClient.getUser();
         this.initUI();
+        if (!this.currentUser) {
+            this.ensureSession();
+        }
+    }
+
+    async ensureSession() {
+        if (!window.ApiClient.getToken() || !window.ApiClient.getUser()) {
+            try {
+                // Auto-login as default demo student so SRS tracking and battles work immediately out-of-the-box
+                await this.performLogin("student", "student123");
+            } catch (e) {
+                console.log("Auto student session initialization:", e);
+            }
+        }
     }
 
     initUI() {

@@ -23,7 +23,7 @@ def get_srs_stats(
     due_today = sum(1 for r in reviews if r.next_review_date <= now)
     mastered = sum(1 for r in reviews if r.repetition_n >= 3 and r.ease_factor >= 2.2)
     learning = sum(1 for r in reviews if 0 < r.repetition_n < 3)
-    weak = sum(1 for r in reviews if (r.total_mistakes > 0 and (r.total_mistakes / max(1, r.total_reviews)) >= 0.3) or r.ease_factor < 1.8)
+    weak = sum(1 for r in reviews if r.total_mistakes > 0 or r.ease_factor < 2.0)
 
     return {
         "total_cards": total_cards,
@@ -57,7 +57,7 @@ def get_weak_words(
     weak_list = []
     for r in reviews:
         mistake_rate = r.total_mistakes / max(1, r.total_reviews)
-        if mistake_rate >= 0.25 or r.ease_factor < 1.9 or (r.repetition_n == 0 and r.total_mistakes > 0):
+        if r.total_mistakes > 0 or r.ease_factor < 2.0:
             weak_list.append({
                 "id": r.id,
                 "word_en": r.word_en,

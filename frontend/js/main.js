@@ -237,14 +237,25 @@ class GameManager {
         this.canvasRenderer.damageBoss(damage);
 
         // Record for Spaced Repetition (SM-2)
-        this.testedWords.push({
-            word_en: wordEn,
-            meaning_vn: meaningVn,
-            phonetic: phonetic,
-            is_correct: true,
-            rhythm_rating: "PERFECT",
-            response_time_ms: 1800
-        });
+        const ch = this.currentLevel.challenges[this.currentChallengeIndex];
+        if (ch && ch.challenge_type !== "paragraph_order") {
+            const wordResult = {
+                word_en: wordEn,
+                meaning_vn: meaningVn,
+                phonetic: phonetic,
+                is_correct: true,
+                rhythm_rating: "PERFECT",
+                response_time_ms: 1800
+            };
+            this.testedWords.push(wordResult);
+
+            // REAL-TIME SRS SUBMIT: Send success to backend immediately
+            if (window.ApiClient.getUser()) {
+                window.ApiClient.submitSRSReview(wordResult).catch(err => {
+                    console.warn("Real-time SRS correct submit failed:", err);
+                });
+            }
+        }
 
         // Register score
         const hitRes = window.rhythmEngine.registerManualHit(true, "PERFECT");
@@ -265,17 +276,28 @@ class GameManager {
         this.canvasRenderer.bossAttack();
         window.soundEngine.playPlayerHurt();
 
-        // Record failure for Spaced Repetition
+        // Record failure for Spaced Repetition (SM-2)
         const ch = this.currentLevel.challenges[this.currentChallengeIndex];
-        if (ch) {
-            this.testedWords.push({
+        if (ch && ch.challenge_type !== "paragraph_order") {
+            const extra = ch.extra_data || {};
+            const meaning = extra.meaning_vn || ch.vn_prompt;
+            const phonetic = extra.phonetic || "";
+            const wordResult = {
                 word_en: ch.en_target,
-                meaning_vn: ch.vn_prompt,
-                phonetic: (ch.extra_data && ch.extra_data.phonetic) || "",
+                meaning_vn: meaning,
+                phonetic: phonetic,
                 is_correct: false,
                 rhythm_rating: "MISS",
                 response_time_ms: 4500
-            });
+            };
+            this.testedWords.push(wordResult);
+
+            // REAL-TIME SRS SUBMIT: Send mistake to backend immediately!
+            if (window.ApiClient.getUser()) {
+                window.ApiClient.submitSRSReview(wordResult).catch(err => {
+                    console.warn("Real-time SRS mistake submit failed:", err);
+                });
+            }
         }
 
         window.rhythmEngine.registerManualHit(false, "MISS");

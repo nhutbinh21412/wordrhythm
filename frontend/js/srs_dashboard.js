@@ -9,6 +9,9 @@ class SRSDashboard {
     }
 
     async init() {
+        if (!window.ApiClient.getUser() && window.authManager) {
+            await window.authManager.ensureSession();
+        }
         await this.loadStats();
         await this.loadWeakWords();
         await this.loadDueCards();
@@ -23,6 +26,16 @@ class SRSDashboard {
             document.getElementById("stat-weak").textContent = stats.weak_count;
         } catch (e) {
             console.error("Failed to load SRS stats:", e);
+            if (String(e).includes("401") && window.authManager) {
+                await window.authManager.ensureSession();
+                const retryStats = await window.ApiClient.getSRSStats().catch(() => null);
+                if (retryStats) {
+                    document.getElementById("stat-total-cards").textContent = retryStats.total_cards;
+                    document.getElementById("stat-due-today").textContent = retryStats.due_today;
+                    document.getElementById("stat-mastered").textContent = retryStats.mastered_count;
+                    document.getElementById("stat-weak").textContent = retryStats.weak_count;
+                }
+            }
         }
     }
 
@@ -185,6 +198,9 @@ class SRSDashboard {
             window.soundEngine.playHitPerfect();
             this.currentCardIndex++;
             this.renderCurrentCard();
+            // Refresh stats and weak words live
+            this.loadStats();
+            this.loadWeakWords();
         } catch (e) {
             console.error("Error submitting SRS review:", e);
         }

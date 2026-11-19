@@ -27,9 +27,10 @@ def calculate_sm2(
         new_ef = 1.3
         
     if q < 3:
-        # Failed recall - reset repetitions
+        # Failed recall - reset repetitions and make it due immediately for re-learning
         new_n = 0
-        new_interval = 1
+        new_interval = 0
+        next_review = datetime.datetime.utcnow() - datetime.timedelta(minutes=1)
     else:
         # Successful recall
         if repetition_n == 0:
@@ -41,8 +42,7 @@ def calculate_sm2(
             if new_interval <= interval_days:
                 new_interval = interval_days + 1
         new_n = repetition_n + 1
-
-    next_review = datetime.datetime.utcnow() + datetime.timedelta(days=new_interval)
+        next_review = datetime.datetime.utcnow() + datetime.timedelta(days=new_interval)
 
     return {
         "repetition_n": new_n,

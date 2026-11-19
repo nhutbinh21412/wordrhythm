@@ -124,6 +124,10 @@ def submit_game_session(
                 SRSReview.word_en.ilike(item.word_en.strip())
             ).first()
 
+            # Avoid double-counting if reviewed in real-time just seconds ago
+            if review and (datetime.datetime.utcnow() - review.last_reviewed_at).total_seconds() < 60:
+                continue
+
             if not review:
                 sm2_res = calculate_sm2(quality, 0, 2.5, 0)
                 review = SRSReview(
