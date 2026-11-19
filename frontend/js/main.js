@@ -99,9 +99,15 @@ class GameManager {
 
     async loadCampaignLevels() {
         try {
-            const levels = await window.ApiClient.getLevels();
+            const rawLevels = await window.ApiClient.getLevels();
             const grid = document.getElementById("levels-grid");
             if (!grid) return;
+
+            // Deduplicate and filter out legacy duplicate levels
+            const legacyBlacklist = ["Cyber City", "Mystic Forest", "IELTS Titan Arena"];
+            const levels = (rawLevels || [])
+                .filter(lvl => !legacyBlacklist.some(b => lvl.title.includes(b)))
+                .sort((a, b) => a.title.localeCompare(b.title));
 
             grid.innerHTML = levels.map((lvl, idx) => `
                 <div class="level-card animate-fade-in" data-id="${lvl.id}">
@@ -250,9 +256,7 @@ class GameManager {
 
         if (this.currentChallengeIndex >= this.currentLevel.challenges.length) {
             // Completed all challenges!
-            if (this.bossHp <= 0 || this.playerHp > 0) {
-                this.handleVictory();
-            }
+            this.handleVictory();
             return;
         }
 
@@ -303,8 +307,6 @@ class GameManager {
     }
 
     handlePlayerHurt(reasonText) {
-        this.playerHp = Math.max(0, this.playerHp - 1);
-        this.canvasRenderer.setPlayerHp(this.playerHp);
         this.canvasRenderer.bossAttack();
         window.soundEngine.playPlayerHurt();
 
@@ -334,12 +336,9 @@ class GameManager {
 
         window.rhythmEngine.registerManualHit(false, "MISS");
 
-        if (this.playerHp <= 0) {
-            setTimeout(() => this.handleDefeat(), 600);
-        } else {
-            this.currentChallengeIndex++;
-            setTimeout(() => this.nextChallenge(), 1000);
-        }
+        // Player HP removed: continuous learning without game over
+        this.currentChallengeIndex++;
+        setTimeout(() => this.nextChallenge(), 1000);
     }
 
     updateHUDBeat() {

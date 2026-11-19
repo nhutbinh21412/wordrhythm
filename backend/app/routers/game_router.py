@@ -14,8 +14,15 @@ router = APIRouter(prefix="/api/game", tags=["Game"])
 @router.get("/levels", response_model=List[LevelSummaryResponse])
 def get_levels(db: Session = Depends(get_db)):
     levels = db.query(Level).filter(Level.is_published == True).order_by(Level.id.asc()).all()
+    
+    # Filter out known legacy duplicate levels
+    legacy_blacklist = ["Cyber City", "Mystic Forest", "IELTS Titan Arena"]
+    valid_levels = [lvl for lvl in levels if not any(b in lvl.title for b in legacy_blacklist)]
+    # Sort in natural numerical order (Level 1 -> Level 6)
+    valid_levels.sort(key=lambda x: x.title)
+
     results = []
-    for lvl in levels:
+    for lvl in valid_levels:
         results.append({
             "id": lvl.id,
             "title": lvl.title,

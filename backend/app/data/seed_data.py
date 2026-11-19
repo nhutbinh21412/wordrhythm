@@ -854,7 +854,27 @@ def seed_database(db: Session):
         db.commit()
         db.refresh(teacherdemo)
 
-    # 2. Seed Levels & 10 Challenges per level
+    # 2. Clean up legacy duplicate levels (Cyber City, Mystic Forest, IELTS Titan Arena)
+    legacy_titles = [
+        "Level 2: Cyber City (Công nghệ & Trí tuệ Nhân tạo)",
+        "Level 3: Mystic Forest (Môi trường & Thiên nhiên)",
+        "Level 5: IELTS Titan Arena (Học thuật Đỉnh cao)",
+        "Level 6: IELTS Titan Arena (Học thuật Đỉnh cao)"
+    ]
+    for old_title in legacy_titles:
+        old_levels = db.query(Level).filter(Level.title == old_title).all()
+        for ol in old_levels:
+            ol.is_published = False
+            try:
+                db.query(Challenge).filter(Challenge.level_id == ol.id).delete()
+                db.delete(ol)
+                db.commit()
+            except Exception:
+                db.rollback()
+                ol.is_published = False
+                db.commit()
+
+    # 3. Seed Levels & 10 Challenges per level
     for level_data in CAMBRIDGE_LEVELS_DATA:
         existing_lvl = db.query(Level).filter(Level.title == level_data["title"]).first()
         if not existing_lvl:
