@@ -842,6 +842,18 @@ def seed_database(db: Session):
         db.commit()
         db.refresh(student)
 
+    teacherdemo = db.query(User).filter(User.username == "teacherdemo").first()
+    if not teacherdemo:
+        teacherdemo = User(
+            username="teacherdemo",
+            email="teacherdemo@wordrhythm.com",
+            hashed_password=hash_password("123456"),
+            role="teacher"
+        )
+        db.add(teacherdemo)
+        db.commit()
+        db.refresh(teacherdemo)
+
     # 2. Seed Levels & 10 Challenges per level
     for level_data in CAMBRIDGE_LEVELS_DATA:
         existing_lvl = db.query(Level).filter(Level.title == level_data["title"]).first()

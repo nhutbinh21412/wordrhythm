@@ -35,32 +35,25 @@ def create_access_token(data: dict, expires_delta: Optional[datetime.timedelta] 
 
 def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Optional[User]:
     if not token:
-        # Fallback to default student demo user so SRS and battles work seamlessly
-        return db.query(User).filter(User.username == "student").first()
+        return None
     
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get("sub")
         if not username:
-            return db.query(User).filter(User.username == "student").first()
+            return None
         token_data = TokenData(username=username, role=payload.get("role"))
     except JWTError:
-        # If token expired or signed with older secret key after redeploy, fallback cleanly to student
-        return db.query(User).filter(User.username == "student").first()
+        return None
         
     user = db.query(User).filter(User.username == token_data.username).first()
-    if user is None:
-        return db.query(User).filter(User.username == "student").first()
     return user
 
-def require_current_user(user: Optional[User] = Depends(get_current_user), db: Session = Depends(get_db)) -> User:
+def require_current_user(user: Optional[User] = Depends(get_current_user)) -> User:
     if not user:
-        student = db.query(User).filter(User.username == "student").first()
-        if student:
-            return student
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required",
+            detail="Authentication required. Please login.",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
