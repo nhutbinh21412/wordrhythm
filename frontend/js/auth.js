@@ -76,29 +76,6 @@ class AuthManager {
     }
 
     bindEvents() {
-        // Quick Demo Login buttons
-        const btnDemoStudent = document.getElementById("btn-demo-student");
-        const btnDemoTeacher = document.getElementById("btn-demo-teacher");
-        const btnDemoTeacherDemo = document.getElementById("btn-demo-teacherdemo");
-
-        if (btnDemoStudent) {
-            btnDemoStudent.addEventListener("click", async () => {
-                await this.performLogin("student", "student123");
-            });
-        }
-
-        if (btnDemoTeacher) {
-            btnDemoTeacher.addEventListener("click", async () => {
-                await this.performLogin("teacher", "teacher123");
-            });
-        }
-
-        if (btnDemoTeacherDemo) {
-            btnDemoTeacherDemo.addEventListener("click", async () => {
-                await this.performLogin("teacherdemo", "123456");
-            });
-        }
-
         // Modal Close
         const modal = document.getElementById("auth-modal");
         const closeModal = document.getElementById("btn-close-modal");
