@@ -203,11 +203,26 @@ class GameManager {
         }
     }
 
+    shuffleChallenges(array) {
+        if (!array || array.length <= 1) return array || [];
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
     startBattle(level) {
-        this.currentLevel = level;
+        // Clone and randomize challenges so boss encounters are freshly randomized each time
+        const activeLevel = { ...level };
+        if (activeLevel.challenges && activeLevel.challenges.length > 1) {
+            activeLevel.challenges = this.shuffleChallenges(activeLevel.challenges);
+        }
+        this.currentLevel = activeLevel;
         this.currentChallengeIndex = 0;
         this.playerHp = 3;
-        this.bossHp = level.boss_hp || 100;
+        this.bossHp = activeLevel.boss_hp || 100;
         this.testedWords = [];
         this.isBattleActive = true;
 

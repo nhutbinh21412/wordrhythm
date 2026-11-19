@@ -55,6 +55,12 @@ def get_level_details(level_id: int, db: Session = Depends(get_db)):
             "order_index": ch.order_index
         })
 
+    # Randomize challenges order so every boss fight is fresh and dynamic
+    import random
+    random.shuffle(challenges_data)
+    for idx, ch in enumerate(challenges_data):
+        ch["order_index"] = idx + 1
+
     return {
         "id": lvl.id,
         "title": lvl.title,
