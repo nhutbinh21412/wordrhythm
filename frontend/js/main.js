@@ -452,8 +452,65 @@ class GameManager {
     }
 }
 
+// Theme Manager (Light / Dark mode toggle with persistent storage)
+class ThemeManager {
+    constructor() {
+        this.STORAGE_KEY = "wordrhythm_theme";
+        this.btnToggle = document.getElementById("btn-theme-toggle");
+        this.init();
+    }
+
+    init() {
+        const savedTheme = localStorage.getItem(this.STORAGE_KEY);
+        const currentTheme = savedTheme || (document.documentElement.getAttribute("data-theme") || "dark");
+        this.applyTheme(currentTheme);
+
+        if (this.btnToggle) {
+            this.btnToggle.addEventListener("click", () => this.toggleTheme());
+        }
+
+        // Listen for OS theme changes if user hasn't explicitly set preference
+        window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
+            if (!localStorage.getItem(this.STORAGE_KEY)) {
+                this.applyTheme(e.matches ? "light" : "dark");
+            }
+        });
+    }
+
+    applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem(this.STORAGE_KEY, theme);
+        this.updateButtonUI(theme);
+        if (window.gameManager && window.gameManager.canvasRenderer) {
+            window.gameManager.canvasRenderer.render();
+        }
+    }
+
+    toggleTheme() {
+        const current = document.documentElement.getAttribute("data-theme") || "dark";
+        const nextTheme = current === "light" ? "dark" : "light";
+        this.applyTheme(nextTheme);
+    }
+
+    updateButtonUI(theme) {
+        if (!this.btnToggle) return;
+        const icon = this.btnToggle.querySelector(".theme-icon");
+        const text = this.btnToggle.querySelector(".theme-text");
+        if (theme === "light") {
+            if (icon) icon.textContent = "🌙";
+            if (text) text.textContent = "Giao diện Tối";
+            this.btnToggle.setAttribute("title", "Chuyển sang giao diện Tối (Dark Mode)");
+        } else {
+            if (icon) icon.textContent = "☀️";
+            if (text) text.textContent = "Giao diện Sáng";
+            this.btnToggle.setAttribute("title", "Chuyển sang giao diện Sáng (Light Mode)");
+        }
+    }
+}
+
 // Bootstrap on DOM load
 window.addEventListener("DOMContentLoaded", () => {
+    window.themeManager = new ThemeManager();
     window.gameManager = new GameManager();
     window.gameManager.init();
 });

@@ -160,18 +160,27 @@ class GameCanvas {
         const { ctx, canvas } = this;
         const w = canvas.width;
         const h = canvas.height;
+        const isLight = document.documentElement.getAttribute("data-theme") === "light";
 
-        // 1. Sleek Obsidian Background
+        // 1. Sleek Background (Light Cyber vs Dark Obsidian)
         const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, "#080c16");
-        grad.addColorStop(0.7, "#0d1322");
-        grad.addColorStop(1, "#111827");
+        if (isLight) {
+            grad.addColorStop(0, "#f8fafc");
+            grad.addColorStop(0.7, "#f1f5f9");
+            grad.addColorStop(1, "#e2e8f0");
+        } else {
+            grad.addColorStop(0, "#080c16");
+            grad.addColorStop(0.7, "#0d1322");
+            grad.addColorStop(1, "#111827");
+        }
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
 
         // 2. Subtle Grid
         ctx.save();
-        ctx.strokeStyle = `rgba(255, 255, 255, ${0.02 + this.beatPulse * 0.03})`;
+        ctx.strokeStyle = isLight 
+            ? `rgba(100, 116, 139, ${0.08 + this.beatPulse * 0.04})`
+            : `rgba(255, 255, 255, ${0.02 + this.beatPulse * 0.03})`;
         ctx.lineWidth = 1;
         const gridSpacing = 44;
         for (let x = 0; x < w; x += gridSpacing) {
